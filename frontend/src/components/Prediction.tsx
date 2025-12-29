@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { predictImage } from "../actions";
+
 
 const Prediction = () => {
     const [preview, setPreview] = useState<string | null>(null);
@@ -20,7 +20,12 @@ const Prediction = () => {
         setLoading(true);
         setMessage("");
         try {
-            const result = await predictImage(formData);
+            const res = await fetch("/api/predict", { method: "POST", body: formData });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || "Request failed");
+            }
+            const result = await res.json();
             setMessage(`Success: ${result.message}. Check Inngest dashboard for results.`);
         } catch (error) {
             console.error(error);
@@ -28,6 +33,12 @@ const Prediction = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        await handleSubmit(fd);
     };
 
     return (
@@ -40,7 +51,7 @@ const Prediction = () => {
                 Upload an image to analyze authenticity
             </p>
 
-            <form action={handleSubmit} className="flex flex-col items-center w-full gap-4">
+            <form onSubmit={onSubmit} className="flex flex-col items-center w-full gap-4">
                 <div className="w-full relative group">
                     <input
                         type="file"

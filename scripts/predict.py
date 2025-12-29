@@ -32,15 +32,19 @@ def predict(image_path, model_path):
     try:
         # Load the model
         device = torch.device('cpu')
-        
-        # Try loading entire model first (if saved with torch.save(model))
-        try:
-            model = torch.load(model_path, map_location=device)
-        except:
-            # Fallback to state_dict (needs class definition above)
+
+        loaded = torch.load(model_path, map_location=device)
+
+        # If the saved file is a state_dict (an OrderedDict or dict),
+        # instantiate the model class and load the state dict.
+        if isinstance(loaded, dict) or hasattr(loaded, "keys"):
             model = DeepFakeCNN()
-            model.load_state_dict(torch.load(model_path, map_location=device))
-        
+            model.load_state_dict(loaded)
+        else:
+            # Assume a full model object was saved
+            model = loaded
+
+        model.to(device)
         model.eval()
 
         # Transform image
