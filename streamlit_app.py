@@ -75,7 +75,7 @@ if file:
         logit = model(x)
         prob_fake = torch.sigmoid(logit).item()
 
-    label = "Fake" if prob_fake > 0.5 else "Real"
+    label = "Fake" if prob_fake > 0.7 else "Real"
     confidence = prob_fake if label == "Fake" else 1 - prob_fake
 
     st.subheader(f"Prediction: {label}")
